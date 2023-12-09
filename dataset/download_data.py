@@ -45,7 +45,7 @@ def download_amazon_review_data(file_name):
 
          # Add to .gitignore
         with open('./.gitignore', 'a') as gitignore:
-            gitignore.write(f"\n{extracted_file_name}")
+            gitignore.write(f"\n{extracted_file_name[1:]}")
         return f"File {file_name} downloaded successfully."
     else:
         return f"Failed to download {file_name}. Error code: {response.status_code}"

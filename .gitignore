@@ -1,5 +1,4 @@
-/datasets/ratings_Electronics.csv
-./dataset/reviews_Electronics_10.json
-./dataset/reviews_Electronics_10.json
-./dataset/reviews_Electronics_10.json
-./dataset/reviews_Electronics_10.json
+__pycache__/
+*.pyc
+
+/dataset/reviews_Electronics_10.json
