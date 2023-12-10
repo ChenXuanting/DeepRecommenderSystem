@@ -13,11 +13,11 @@ def download_amazon_review_data(file_name):
     Returns:
         str: Notification about the file status.
     """
-    url = f"http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/{file_name}.json.gz"
+    url = f"http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/{file_name}.csv"
 
-    extracted_file_name = f'./dataset/{file_name}.json'
+    file_path = f'./dataset/{file_name}.csv'
 
-    if os.path.exists(extracted_file_name):
+    if os.path.exists(file_path):
         return f"File {file_name} already exists."
 
     response = requests.get(url, stream=True)
@@ -25,7 +25,7 @@ def download_amazon_review_data(file_name):
         total_size = int(response.headers.get('content-length', 0))
         block_size = 1024  # 1 Kibibyte
 
-        with open(file_name, 'wb') as file, tqdm(
+        with open(file_path, 'wb') as file, tqdm(
             desc=file_name,
             total=total_size,
             unit='iB',
@@ -36,16 +36,9 @@ def download_amazon_review_data(file_name):
                 file.write(data)
                 bar.update(len(data))
 
-        # Unzip the file
-        with gzip.open(file_name, 'rb') as gz_file:
-            with open(f'{extracted_file_name}', 'wb') as out_file:
-                shutil.copyfileobj(gz_file, out_file)
-
-        os.remove(file_name)
-
          # Add to .gitignore
         with open('./.gitignore', 'a') as gitignore:
-            gitignore.write(f"\n{extracted_file_name[1:]}")
+            gitignore.write(f"\n{file_path[1:]}")
         return f"File {file_name} downloaded successfully."
     else:
         return f"Failed to download {file_name}. Error code: {response.status_code}"
