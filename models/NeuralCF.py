@@ -23,7 +23,6 @@ class NCF(nn.Module):
         self.mlp = nn.Sequential(*MLP_modules)
 
         self.prediction_layer = nn.Linear(num_factors + nums_hiddens[-1], 1, bias=False)
-        init.kaiming_normal_(self.prediction_layer.weight, nonlinearity='relu')
 
     def forward(self, user_id, item_id):
         p_mf = self.P(user_id)
@@ -37,4 +36,4 @@ class NCF(nn.Module):
 
         con_res = torch.cat([gmf, mlp], dim=1)
         prediction = self.prediction_layer(con_res)
-        return torch.relu(prediction)
+        return torch.sigmoid(prediction)

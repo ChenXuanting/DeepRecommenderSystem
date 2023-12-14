@@ -7,15 +7,13 @@ from models.NeuralCF import NCF
 #modify the ratings name variable to change dataset
 ratings_name = "ratings_Home_and_Kitchen"
 downloaded_data = download_amazon_review_data(ratings_name)
-processed_data = preprocess(ratings_name)
+processed_train, processed_test, num_users, num_items  = preprocess(ratings_name)
 
-train_dataset = NCFDataset(processed_data)
+train_dataset = NCFDataset(processed_train)
 train_loader = DataLoader(train_dataset, batch_size=4096, shuffle=True)
 
 # Hyperparameters
 num_factors = 50
-num_users = processed_data['userid_encoded'].nunique()
-num_items = processed_data['itemid_encoded'].nunique()
 nums_hiddens = [128, 64, 32, 16, 8]
 
 # Create model instance

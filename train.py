@@ -9,13 +9,13 @@ class NCFDataset(Dataset):
     def __init__(self, df):
         self.users = torch.LongTensor(df['userid_encoded'].values)
         self.items = torch.LongTensor(df['itemid_encoded'].values)
-        self.ratings = torch.FloatTensor(df['rating'].values)
+        self.labels = torch.FloatTensor(df['label'].values)
 
     def __len__(self):
-        return len(self.ratings)
+        return len(self.labels)
 
     def __getitem__(self, idx):
-        return self.users[idx], self.items[idx], self.ratings[idx]
+        return self.users[idx], self.items[idx], self.labels[idx]
 
 def train_model(model, train_loader, num_epochs, learning_rate):
     # Check for GPU
@@ -25,7 +25,7 @@ def train_model(model, train_loader, num_epochs, learning_rate):
     model = model.to(device)
 
     # Loss function and optimizer
-    criterion = nn.MSELoss()
+    criterion = nn.BCELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     # Training loop
@@ -34,9 +34,9 @@ def train_model(model, train_loader, num_epochs, learning_rate):
         running_loss = 0.0
 
         progress_bar = tqdm(enumerate(train_loader), total=len(train_loader), desc=f"Epoch {epoch + 1}/{num_epochs}")
-        for i, (users, items, ratings) in progress_bar:
+        for i, (users, items, labels) in progress_bar:
             # Move data to GPU if available
-            users, items, ratings = users.to(device), items.to(device), ratings.to(device)
+            users, items, labels = users.to(device), items.to(device), labels.to(device)
 
             # Zero the parameter gradients
             optimizer.zero_grad()
@@ -45,7 +45,7 @@ def train_model(model, train_loader, num_epochs, learning_rate):
             outputs = model(users, items).squeeze()
 
             # Calculate loss
-            loss = criterion(outputs, ratings)
+            loss = criterion(outputs, labels)
 
             # Backward pass and optimize
             loss.backward()
