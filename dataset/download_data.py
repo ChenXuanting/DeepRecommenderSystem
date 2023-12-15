@@ -1,7 +1,5 @@
 import os
 import requests
-import gzip
-import shutil
 from tqdm import tqdm
 
 def download_amazon_review_data(file_name):

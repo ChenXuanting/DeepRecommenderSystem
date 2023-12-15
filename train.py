@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset
 from tqdm import tqdm
+from evaluate import Evaluator
 
 class NCFDataset(Dataset):
     """PyTorch Dataset for loading data."""
@@ -17,7 +18,7 @@ class NCFDataset(Dataset):
     def __getitem__(self, idx):
         return self.users[idx], self.items[idx], self.labels[idx]
 
-def train_model(model, train_loader, num_epochs, learning_rate):
+def train_model(model, train_loader, test_data, num_users, num_items, top_k, user_sample_ratio, num_epochs, learning_rate):
     # Check for GPU
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -56,4 +57,6 @@ def train_model(model, train_loader, num_epochs, learning_rate):
             # Update progress bar
             progress_bar.set_postfix({'Loss': running_loss / (i + 1)})
 
-        print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_loader):.4f}')
+        evaluator = Evaluator(model, test_data, num_users, num_items, top_k, user_sample_ratio)
+        metrics = evaluator.evaluate()
+        print(f'Hit rate@K: {metrics["Hit Rate"]}, NDCG: {metrics["NDCG"]}, MAP: {metrics["MAP"]}, Precision@K: {metrics["Precision@K"]}, Recall@K: {metrics["Recall@K"]}')
