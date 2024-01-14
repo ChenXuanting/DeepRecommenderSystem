@@ -18,7 +18,7 @@ class NCFDataset(Dataset):
     def __getitem__(self, idx):
         return self.users[idx], self.items[idx], self.labels[idx]
 
-def train_model(model, train_data, test_data, num_users, num_items, top_k, num_user_sample, num_epochs, batch_size, learning_rate):
+def train_model(model, train_data, test_data, num_users, num_items, top_k, num_user_sample, num_neg_test_samples, num_epochs, batch_size, learning_rate):
     # Check for GPU
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -60,6 +60,6 @@ def train_model(model, train_data, test_data, num_users, num_items, top_k, num_u
             # Update progress bar
             progress_bar.set_postfix({'Loss': running_loss / (i + 1)})
 
-        evaluator = Evaluator(model, train_data, test_data, num_users, num_items, top_k, num_user_sample)
+        evaluator = Evaluator(model, train_data, test_data, num_users, num_items, top_k, num_user_sample, num_neg_test_samples)
         metrics = evaluator.evaluate()
-        print(f'Hit rate@K: {metrics["Hit Rate@K"]}, NDCG: {metrics["NDCG"]}, MAP: {metrics["MAP"]}, Precision@K: {metrics["Precision@K"]}, Recall@K: {metrics["Recall@K"]}')
+        print(f'Hit rate@K: {metrics["Hit Rate@K"]}, NDCG: {metrics["NDCG"]}')

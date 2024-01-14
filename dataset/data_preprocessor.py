@@ -2,7 +2,7 @@ import pandas as pd
 from tqdm import tqdm
 import random
 
-def preprocess(file_name, num_neg=1):
+def preprocess(file_name, negative_sampling = False, num_neg=1):
     # Path to the CSV file
     file_path = f'./dataset/{file_name}.csv'
 
@@ -18,26 +18,29 @@ def preprocess(file_name, num_neg=1):
     num_records = df_positives.shape[0]
     print(f'Matrix sparsity: {1-num_records/(num_users*num_items)}')
 
-    # Negative sampling
-    all_items = list(df['itemid'].unique())
-    negatives = []
-    for userid, group in tqdm(df.groupby('userid'), desc='Negative Sampling'):
-        pos_items = set(group['itemid'])
-        neg_samples_count = num_neg * len(pos_items)
-        added_negs = 0
-        added_neg_items = []
+    if negative_sampling:
+        # Negative sampling
+        all_items = list(df['itemid'].unique())
+        negatives = []
+        for userid, group in tqdm(df.groupby('userid'), desc='Negative Sampling'):
+            pos_items = set(group['itemid'])
+            neg_samples_count = num_neg * len(pos_items)
+            added_negs = 0
+            added_neg_items = []
 
-        while (added_negs < neg_samples_count) and (added_negs + len(pos_items) < num_items):
-            neg_item = all_items[random.randint(0, len(all_items) - 1)]
-            if (neg_item not in pos_items) and (neg_item not in added_neg_items):
-                negatives.append([userid, neg_item, 0])
-                added_neg_items.append(neg_item)
-                added_negs += 1
+            while (added_negs < neg_samples_count) and (added_negs + len(pos_items) < num_items):
+                neg_item = all_items[random.randint(0, len(all_items) - 1)]
+                if (neg_item not in pos_items) and (neg_item not in added_neg_items):
+                    negatives.append([userid, neg_item, 0])
+                    added_neg_items.append(neg_item)
+                    added_negs += 1
 
-    df_negatives = pd.DataFrame(negatives, columns=['userid', 'itemid', 'label'])
+        df_negatives = pd.DataFrame(negatives, columns=['userid', 'itemid', 'label'])
 
-    # Combine positives and negatives
-    df_combined = pd.concat([df_positives, df_negatives]).fillna(0)
+        # Combine positives and negatives
+        df_combined = pd.concat([df_positives, df_negatives])
+    else:
+        df_combined = df_positives
 
     # Encode 'userid' and 'itemid'
     user_encoder = {uid: idx for idx, uid in enumerate(df_combined['userid'].unique())}
