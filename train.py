@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from evaluate import Evaluator
 
@@ -18,16 +18,19 @@ class NCFDataset(Dataset):
     def __getitem__(self, idx):
         return self.users[idx], self.items[idx], self.labels[idx]
 
-def train_model(model, train_loader, test_data, num_users, num_items, top_k, user_sample_ratio, num_epochs, learning_rate):
+def train_model(model, train_data, test_data, num_users, num_items, top_k, num_user_sample, num_epochs, batch_size, learning_rate):
     # Check for GPU
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Move model to GPU if available
     model = model.to(device)
 
+    train_dataset = NCFDataset(train_data)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+
     # Loss function and optimizer
     criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)
 
     # Training loop
     for epoch in range(num_epochs):
@@ -57,6 +60,6 @@ def train_model(model, train_loader, test_data, num_users, num_items, top_k, use
             # Update progress bar
             progress_bar.set_postfix({'Loss': running_loss / (i + 1)})
 
-        evaluator = Evaluator(model, test_data, num_users, num_items, top_k, user_sample_ratio)
+        evaluator = Evaluator(model, train_data, test_data, num_users, num_items, top_k, num_user_sample)
         metrics = evaluator.evaluate()
-        print(f'Hit rate@K: {metrics["Hit Rate"]}, NDCG: {metrics["NDCG"]}, MAP: {metrics["MAP"]}, Precision@K: {metrics["Precision@K"]}, Recall@K: {metrics["Recall@K"]}')
+        print(f'Hit rate@K: {metrics["Hit Rate@K"]}, NDCG: {metrics["NDCG"]}, MAP: {metrics["MAP"]}, Precision@K: {metrics["Precision@K"]}, Recall@K: {metrics["Recall@K"]}')

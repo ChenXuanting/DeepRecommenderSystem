@@ -1,8 +1,6 @@
-import numpy as np
 import pandas as pd
 from tqdm import tqdm
 import random
-from sklearn.model_selection import train_test_split
 
 def preprocess(file_name, num_neg=1):
     # Path to the CSV file
@@ -15,6 +13,11 @@ def preprocess(file_name, num_neg=1):
     df_positives = df[['userid', 'itemid', 'timestamp']].drop_duplicates()
     df_positives['label'] = 1
 
+    num_users = df_positives['userid'].nunique()
+    num_items = df_positives['itemid'].nunique()
+    num_records = df_positives.shape[0]
+    print(f'Matrix sparsity: {1-num_records/(num_users*num_items)}')
+
     # Negative sampling
     all_items = list(df['itemid'].unique())
     negatives = []
@@ -22,11 +25,13 @@ def preprocess(file_name, num_neg=1):
         pos_items = set(group['itemid'])
         neg_samples_count = num_neg * len(pos_items)
         added_negs = 0
+        added_neg_items = []
 
-        while added_negs < neg_samples_count:
+        while (added_negs < neg_samples_count) and (added_negs + len(pos_items) < num_items):
             neg_item = all_items[random.randint(0, len(all_items) - 1)]
-            if neg_item not in pos_items:
+            if (neg_item not in pos_items) and (neg_item not in added_neg_items):
                 negatives.append([userid, neg_item, 0])
+                added_neg_items.append(neg_item)
                 added_negs += 1
 
     df_negatives = pd.DataFrame(negatives, columns=['userid', 'itemid', 'label'])
@@ -43,7 +48,7 @@ def preprocess(file_name, num_neg=1):
 
     # Leave-one-out split
     df_combined['rank_latest'] = df_combined.groupby(['userid_encoded'])['timestamp'].rank(method='first', ascending=False)
-    train_df = df_combined[df_combined['rank_latest'] != 1].drop(columns=['timestamp', 'userid', 'itemid'])
-    test_df = df_combined[df_combined['rank_latest'] == 1].drop(columns=['timestamp', 'userid', 'itemid'])
+    train_df = df_combined[df_combined['rank_latest'] != 1]
+    test_df = df_combined[df_combined['rank_latest'] == 1]
 
-    return train_df, test_df, df_combined['userid_encoded'].nunique(), df_combined['itemid_encoded'].nunique()
+    return train_df[['label', 'userid_encoded', 'itemid_encoded']], test_df[['label', 'userid_encoded', 'itemid_encoded']], num_users, num_items

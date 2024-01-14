@@ -5,28 +5,30 @@ from sklearn.metrics import average_precision_score
 from tqdm import tqdm
 
 class Evaluator:
-    def __init__(self, model, test_data, num_users, num_items, top_k, user_sample_ratio):
+    def __init__(self, model, train_data, test_data, num_users, num_items, top_k, num_user_sample):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model.to(self.device)
+        self.train_data = train_data
         self.test_data = test_data
         self.num_users = num_users
         self.num_items = num_items
         self.top_k = top_k
-        self.user_sample_ratio = user_sample_ratio
+        self.num_user_sample = num_user_sample
 
     def evaluate(self):
 
          # Randomly sample a subset of users
-        sampled_users = random.sample(range(self.num_users), int(self.num_users * self.user_sample_ratio))
+        random.seed(42)
+        sampled_users = random.sample(range(self.num_users), self.num_user_sample)
         hit_rates, ndcgs, maps, precisions, recalls = [], [], [], [], []
 
         for userid in tqdm(sampled_users, desc="Evaluating", total=len(sampled_users)):
-            # Get top K recommendations for the user
-            top_k_recommendations = set(self.recommend(userid))
-
             # Get the ground truth for the user
             user_data = self.test_data[self.test_data['userid_encoded'] == userid]
             positive_items = set(user_data[user_data['label'] == 1]['itemid_encoded'])
+
+            # Get top K recommendations for the user
+            top_k_recommendations = set(self.recommend(userid))
 
             # Calculate metrics
             hit_rates.append(self.calculate_hit_rate(top_k_recommendations, positive_items))
@@ -55,8 +57,9 @@ class Evaluator:
         self.model.eval()
 
         # Generate predictions for all items for the given user
-        user_tensor = torch.tensor([userid] * self.num_items)  # Repeat the user ID for each item
-        items_tensor = torch.tensor(range(self.num_items))     # All item IDs
+        candidate_list = list(set(range(self.num_items))-set(self.train_data[self.train_data['userid_encoded'] == userid]['itemid_encoded']))
+        user_tensor = torch.tensor([userid] * len(candidate_list))  # Repeat the user ID for each item
+        items_tensor = torch.tensor(candidate_list)
 
         # Move tensors to the same device as the model
         user_tensor = user_tensor.to(self.device)
@@ -69,9 +72,9 @@ class Evaluator:
         _, top_k_indices = torch.topk(predictions, self.top_k)
 
         # Convert to a list of item IDs
-        top_k_items = top_k_indices.cpu().tolist()
+        top_k_indices = top_k_indices.cpu().tolist()
 
-        return top_k_items
+        return [candidate_list[index] for index in top_k_indices]
 
     # Helper methods for calculating metrics
     def calculate_hit_rate(self, top_k_recommendations, positive_items):
