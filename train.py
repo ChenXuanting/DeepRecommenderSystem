@@ -5,7 +5,7 @@ from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from evaluate import Evaluator
 
-class NCFDataset(Dataset):
+class DatasetLoader(Dataset):
     """PyTorch Dataset for loading data."""
     def __init__(self, df):
         self.users = torch.LongTensor(df['userid_encoded'].values)
@@ -25,7 +25,7 @@ def train_model(model, train_data, test_data, num_users, num_items, top_k, num_u
     # Move model to GPU if available
     model = model.to(device)
 
-    train_dataset = NCFDataset(train_data)
+    train_dataset = DatasetLoader(train_data)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
     # Loss function and optimizer

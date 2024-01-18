@@ -1,6 +1,6 @@
 # Recommender System
 
-This project is a clean and lightweight implementation of two popular recommendation system algorithms: Neural Collaborative Filtering (NCF) and Deep Factorization Machine (DFM). It is designed to be easy to understand and use for anyone interested in the field of recommendation systems.
+This project is a clean and lightweight implementation of two popular recommendation system algorithms: Neural Collaborative Filtering (NCF) and Deep Factorization Machine (DFM) in PyTorch. It is designed to be easy to understand and use for anyone interested in the field of recommendation systems.
 
 ## Getting Started
 
@@ -46,10 +46,16 @@ You can tune the hyperparameters of the models directly in the `main.py` file.
 
 The performance of the models is evaluated using two metrics:
 - Hit Rate at K
-- Normalized Discounted Cumulative Gain (NDCG)
+- Normalized Discounted Cumulative Gain (NDCG) at K
 
-We have implemented negative sampling and leave-one-out evaluation as proposed in the original papers. Related parameters, such as the number of negative samples, can be adjusted in the `main.py` file.
+We have implemented negative sampling and leave-one-out evaluation as proposed in the [original papers](https://arxiv.org/abs/1708.05031). Related parameters, such as the number of negative samples, can be adjusted in the `main.py` file.
 
+### Our Results
+The performance is evaluated as a 10-time average on the MovieLens 100K dataset. The matrix sparsity is 0.937.
+| Model                   | Hit Rate @ 10 | NDCG @ 10 |
+|-------------------------|---------------|-----------|
+| NCF                     |   0.5815      |   0.460   |
+| DFM                     |   0.6036      |   0.486   |
 ## Contributing
 
 Contributions to improve the project are welcome. Feel free to fork the repository and submit pull requests.

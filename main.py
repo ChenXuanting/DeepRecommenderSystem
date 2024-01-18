@@ -18,7 +18,7 @@ processed_train, processed_test, num_users, num_items  = preprocess(ratings_name
 
 if sys.argv[1] == "NCF":
     # Create model instance
-    model = NCF(5, num_users, num_items, nums_hiddens= [128, 64, 32, 16])
+    model = NCF(5, num_users, num_items, nums_hiddens= [128, 64, 32])
 elif sys.argv[1] == 'DFM':
     model = DFM([num_users, num_items])
 else:
