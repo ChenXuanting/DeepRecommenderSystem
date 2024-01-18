@@ -3,10 +3,10 @@
 This project is a clean and lightweight implementation of two popular recommendation system algorithms: Neural Collaborative Filtering (NCF) and Deep Factorization Machine (DFM) in PyTorch. It is designed to be easy to understand and use for anyone interested in the field of recommendation systems.
 
 ### Neural Collaborative Filtering
-![image](pics/NCF.png)
+<img src="pics/NCF.png" width="500"/>
 
 ### Deep Factorization Machine
-![image](pics/DFM.png)
+<img src="pics/DFM.png" width="500"/>
 
 ## Getting Started
 
