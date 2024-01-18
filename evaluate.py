@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 import random
-from sklearn.metrics import average_precision_score
 from tqdm import tqdm
 
 class Evaluator:
