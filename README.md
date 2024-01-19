@@ -33,9 +33,9 @@ Additionally, you can use Amazon review datasets by modifying the `ratings_name`
 ## Usage
 
 To train a model, run the following command:
-
+```bash
 python main.py <model_name>
-
+```
 Available model names are:
 - `NCF`: For Neural Collaborative Filtering
 - `DFM`: For Deep Factorization Machine
